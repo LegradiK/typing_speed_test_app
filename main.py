@@ -91,26 +91,47 @@ class TypingSpeedGame(ctk.CTk):
         # stop shrinking to fit contents
         self.accuracy_rate_frame.grid_propagate(False)
 
+        self.top_frame.grid_rowconfigure(0, weight=1)
+        self.top_frame.grid_rowconfigure(1, weight=1)
+        self.top_frame.grid_columnconfigure(0, weight=1)
+        self.top_frame.grid_columnconfigure(1, weight=1)
+
         self.accuracy_rate = tk.Label(
             self.accuracy_rate_frame,
             text='Accuracy rate',
-            font=('Press Start 2P', 16),
+            font=('Press Start 2P', 10),
             fg='#36454F',
+            bg='#ebebeb',
             anchor='nw'
         )
         self.accuracy_rate.grid(
             row=0,
             column=0,
             padx=30,
-            pady=30
+            pady=10
+        )
+        self.percentageLabel = tk.Label(
+            self.accuracy_rate_frame,
+            text='%',
+            font=('Press Start 2P', 24),
+            fg='#36454F',
+            bg= '#ebebeb',
+            anchor='se'
+        )
+        self.percentageLabel.grid(
+            row=1,
+            column=1,
+            padx=10,
+            pady=10
         )
 
         # app name
         self.app_name = tk.Label(
             self.top_frame,
             text='Typing Speed Checker',
-            font=('Press Start 2P', 42),
-            fg='#36454F'
+            font=('Press Start 2P', 24),
+            fg='#36454F',
+            bg= '#ebebeb'
         )
         self.app_name.grid(
             row=0,
