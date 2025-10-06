@@ -1,4 +1,5 @@
 import os
+import webbrowser
 import tkinter as tk
 from tkinter import font
 from CTkMenuBar import *
@@ -32,6 +33,7 @@ with open('google-10000-english-no-swears.txt') as words_file:
 word = random.choice(words)
 
 
+
 class TypingSpeedGame(ctk.CTk):
     def __init__(self, fg_color = None, **kwargs):
         super().__init__(fg_color, **kwargs)
@@ -47,6 +49,7 @@ class TypingSpeedGame(ctk.CTk):
         # Register the font with Tk
         self.tk.call("font", "create", "PressStart2PFont", "-family", "Press Start 2P", "-size", 32)
 
+        self.has_played = False  # track if user has played at least once
 
         # bar
         self.menu = CTkMenuBar(master=self)
@@ -54,12 +57,12 @@ class TypingSpeedGame(ctk.CTk):
         self.button2 = self.menu.add_cascade('Help')
         # dropdown 1
         self.dropdown1 = CustomDropdownMenu(widget=self.button1)
-        self.dropdown1.add_option(option='Play Again')
-        self.dropdown1.add_option(option='Exit')
+        self.dropdown1.add_option(option='Play Again', command=self.start_or_play_again)
+        self.dropdown1.add_option(option='Exit', command=self.exit_game)
         # dropdown 2
         self.dropdown2 = CustomDropdownMenu(widget=self.button2)
-        self.dropdown2.add_option(option='Help - GitHub')
-        self.dropdown2.add_option(option='About')
+        self.dropdown2.add_option(option='Help - GitHub', command=self.open_github)
+        self.dropdown2.add_option(option='About', command=self.show_about)
 
         # top frame
         self.top_frame = ctk.CTkFrame(
@@ -195,7 +198,6 @@ class TypingSpeedGame(ctk.CTk):
         self.timer_frame.grid_columnconfigure(0, weight=1)
         self.timer_frame.grid_columnconfigure(1, weight=1)
 
-        # actual remaining time to be shown
         self.remaining_timeLabel = tk.Label(
             self.timer_frame,
             text='60',
@@ -237,15 +239,41 @@ class TypingSpeedGame(ctk.CTk):
             command=self.start_game
             )
         self.play_button.place(relx=0.5, rely=0.38, anchor='center')
+        # bind Enter key
+        self.bind("<Return>", self.start_game)
 
 
-    def start_game(self):
+    def start_game(self, event=None):
         global comp_input_words_w, comp_input_words_h, user_entry_w, user_entry_h
+        # remove global Enter binding (so it won’t restart the game)
+        self.unbind("<Return>")
+
         # make the button disappear once clicked
         self.play_button.place_forget()
         sleep(0.35)
         self.countdown_3_secs()
         self.after(4000, self.play_game)
+
+    def play_again(self, event=None):
+        global comp_input_words_w, comp_input_words_h, user_entry_w, user_entry_h
+        # remove global Enter binding (so it won’t restart the game)
+        self.unbind("<Return>")
+
+        # make the button disappear once clicked
+        self.play_again_button.place_forget()
+        self.exit_button.place_forget()
+        self.result_text.place_forget()
+        self.resultLabel.place_forget()
+        sleep(0.35)
+        self.countdown_3_secs()
+        self.after(4000, self.play_game)
+
+    def start_or_play_again(self):
+        if self.has_played:
+            self.play_again()
+        else:
+            self.start_game()
+            self.has_played == True
 
     # let the system pause for 3 seconds
     # to countdown 3 seconds before starting typing
@@ -274,6 +302,112 @@ class TypingSpeedGame(ctk.CTk):
             # remove the label after 1 second
             self.after(1000, self.countdownLabel.destroy)
 
+    def counting_a_minute(self):
+        """Start a 60 second countdown when the game begins"""
+        self.time_left = 60
+        self.update_timer()
+
+    def update_timer(self):
+        if self.time_left > 0:
+            self.remaining_timeLabel.config(text=str(self.time_left))
+            self.time_left -= 1
+            # call again after 1 second
+            self.after(1000, self.update_timer)
+        else:
+            self.remaining_timeLabel.config(text="0")
+            # both boxes to disappear
+            self.comp_word_input_frame.destroy()
+            self.user_entry.destroy()
+
+            # show the result of typing test
+            self.resultLabel = tk.Label(
+                self.game_frame,
+                text=f'Game is Over!\n\n\n',
+                font=('Press Start 2P', 34),
+                fg="#FF8C42",
+                bg='#ebebeb',
+                justify='center'
+            )
+            self.resultLabel.place(relx=0.5, rely=0.3, anchor='center')
+
+            if self.total_challenge_count > 0:
+                # when user actually played a game
+                self.result_text = tk.Text(
+                    self.game_frame,
+                    font=('Press Start 2P', 16),
+                    bg='#ebebeb',
+                    height=6,
+                    width=40,
+                    bd=0,
+                    highlightthickness=0,   # remove the focus highlight border
+                    relief='flat',          # flat relief
+                    padx=5, pady=5
+                )
+                self.result_text.place(relx=0.5, rely=0.4, anchor='center')
+
+                # insert text with different colors
+                # wpm result color to be changed depending on number of counts
+                self.result_text.tag_configure('label', foreground='#74797E')
+                if self.correct_spelling_count >= 100:
+                    self.result_text.tag_configure('wpm', foreground='gold')
+                elif self.correct_spelling_count >= 60:
+                    self.result_text.tag_configure('wpm', foreground='yellow')
+                elif self.correct_spelling_count >= 40:
+                    self.result_text.tag_configure('wpm', foreground='blue')
+                elif self.correct_spelling_count < 40:
+                    self.result_text.tag_configure('wpm', foreground='red')
+                # percentage appearance color to be changed
+                if self.accuracy_rate >= 90:
+                    self.result_text.tag_configure('accurecy', foreground='green')
+                else:
+                    self.result_text.tag_configure('accurecy', foreground='red')
+
+                self.result_text.insert('end', f'Words Per Minute (with mistakes): {self.total_challenge_count}\n\n','label')
+                self.result_text.insert('end', f'Words Per Minute (without mistakes): ', 'label')
+                self.result_text.insert('end', f'{self.correct_spelling_count}\n\n', 'wpm')
+                self.result_text.insert('end', f'Your accuracy rate: ', 'label')
+                self.result_text.insert('end', f'{self.accuracy_rate} %\n\n', 'accurecy')
+                # make text read-only
+                self.result_text.config(state='disabled')
+            else:
+                self.result_text = tk.Label(
+                    self.game_frame,
+                    text="No previous results.\n\nHit ‘Play’ to begin your typing test.\n\nOr click 'Exit'",
+                    font=('Press Start 2P', 16),
+                    fg='#74797E',
+                    bg='#ebebeb',
+                    justify='center'
+                )
+                self.result_text.place(relx=0.5, rely=0.4, anchor='center')
+
+            self.play_again_button = ctk.CTkButton(
+                master=self.game_frame,
+                width=200,
+                height=100,
+                border_width=0,
+                corner_radius=8,
+                text="Play Again",
+                font=('Press Start 2P', 24),
+                command=self.play_again
+            )
+            self.play_again_button.place(relx=0.4, rely=0.7, anchor='center')
+
+            self.exit_button = ctk.CTkButton(
+                master=self.game_frame,
+                width=200,
+                height=100,
+                border_width=0,
+                corner_radius=8,
+                text="Exit",
+                font=('Press Start 2P', 24),
+                command=self.exit_game
+            )
+            self.exit_button.place(relx=0.6, rely=0.7, anchor='center')
+
+            self.has_played == True
+
+    def exit_game(self):
+        self.destroy()
 
     def play_game(self):
         # typing screen
@@ -288,9 +422,10 @@ class TypingSpeedGame(ctk.CTk):
             bg_color="#e5e4e4"
         )
         self.comp_word_input_frame.place(relx=0.5, rely=0.25, anchor='center')
+        self.current_word = self.get_new_word()
         self.comp_word_inputLabel = tk.Label(
             self.comp_word_input_frame,
-            text='words',
+            text=self.current_word,
             font=('Roboto', 34),
             fg="#363637",
             bg="#e5e4e4",
@@ -313,18 +448,77 @@ class TypingSpeedGame(ctk.CTk):
         )
         self.user_entry.place(relx=0.5, rely=0.65, anchor='center')
 
+        # auto-focus entry so user can start typing immediately
+        self.user_entry.focus_set()
+
+        # bind Enter key
+        self.user_entry.bind("<Return>", self.check_spelling)
+
+        # start countdown
+        self.counting_a_minute()
+
+        # counters for accuracy
+        self.total_challenge_count = 0
+        self.correct_spelling_count = 0
 
 
-    def counting_a_minute(self):
-        """ count down 60 seconds while the game is being played"""
-        minute = 60
-        while minute > 0:
-            for seconds in range(60, 0, -1):
-                sleep(1)
-                print(minute)
-                minute = minute - 1
-        sleep(1)
-        print('End')
+    def get_new_word(self):
+        # get a random word
+        # keep track of used words across rounds
+        if not hasattr(self, "used_words"):
+            self.used_words = []
+        available_words = [w for w in words if w not in self.used_words]
+        if not available_words:  # reset if all used
+            self.used_words = []
+            available_words = words[:]
+        word = random.choice(available_words)
+        self.used_words.append(word)
+        return word
+
+    def check_spelling(self, event=None):
+        """ get current_word and user_input, then check if the spelling is correct"""
+        user_input = self.user_entry.get()
+        self.total_challenge_count += 1
+        if user_input == self.current_word:
+            self.correct_spelling_count += 1
+        # success rate
+        self.accuracy_rate = round(self.correct_spelling_count / self.total_challenge_count * 100)
+        self.percentage_numLabel.config(text=str(self.accuracy_rate))
+
+        # clear entry field
+        self.user_entry.delete(0, tk.END)
+
+        # load next word
+        self.current_word = self.get_new_word()
+        self.comp_word_inputLabel.config(text=self.current_word)
+
+    def show_about(self):
+        """open 'About' popup page to show the copyright"""
+        about = ctk.CTkToplevel(self)
+        about.title('About')
+        about.geometry('400x250')
+        about.resizable(False, False)
+
+        label = ctk.CTkLabel(
+            about,
+            text='Typing Speed Checker App\n\n'
+            'Created with Python, tkinter and CustomTkinter\n'
+            'copyright 2025 Kaho L',
+            font=('Arial', 16),
+            justify='center'
+        )
+        label.pack(expand=True, padx=20, pady=20)
+        close_button = ctk.CTkButton(
+            about,
+            text='Close',
+            command=about.destroy
+        )
+        close_button.pack(pady=10)
+
+    def open_github(self):
+        """Open Github project page in default browser"""
+        webbrowser.open_new("https://github.com/LegradiK/typing_speed_test_app.git")
+
 
 if __name__ == '__main__':
     app = TypingSpeedGame()
