@@ -349,7 +349,7 @@ class TypingSpeedGame(ctk.CTk):
                 # wpm result color to be changed depending on number of counts
                 self.result_text.tag_configure('label', foreground='#74797E')
                 if self.correct_spelling_count >= 100:
-                    self.result_text.tag_configure('wpm', foreground='gold')
+                    self.result_text.tag_configure('wpm', foreground='orange')
                 elif self.correct_spelling_count >= 60:
                     self.result_text.tag_configure('wpm', foreground='yellow')
                 elif self.correct_spelling_count >= 40:
