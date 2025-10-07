@@ -8,11 +8,35 @@ It challenges you to type as many words as possible within **60 seconds** while 
 - **Modern UI** with CustomTkinter
 - Theme support via CTkThemesPack
 - Word list from google-10000-english
+- **US English spelling** is used in the tests due to the [dataset](https://github.com/first20hours/google-10000-english)
 - **Tracks accuracy and WPM** (with & without mistakes)
 - Built-in **60-second countdown timer**
 - Menu bar powered by CTkMenuBar
 - **Retro arcade vibe** with Press Start 2P font
-- **US English** spelling is used in the tests due to the [dataset](https://github.com/first20hours/google-10000-english)
+
+
+## Installation
+
+#### Clone the repository:
+
+<pre>git clone https://github.com/LegradiK/typing_speed_test_app.git
+cd typing_speed_test_app</pre>
+
+#### Install dependencies:
+
+<pre>pip install customtkinter</pre>
+
+#### Run the app:
+
+<pre>python main.py</pre>
+
+## Usage
+
+- Play: Start the typing test
+- Enter: Submit typed word
+- Menu → Play Again: Restart the game
+- Menu → Exit: Quit the app
+- Help → GitHub / About: Access help options
 
 ## Screenshots
 
@@ -47,28 +71,6 @@ Red 🔴 → < 90% accuracy
 
 This gives instant visual feedback on your performance instead of relying only on numbers.
 
-## Installation
-
-#### Clone the repository:
-
-<pre>git clone https://github.com/LegradiK/typing_speed_test_app.git
-cd typing_speed_test_app</pre>
-
-#### Install dependencies:
-
-<pre>pip install customtkinter</pre>
-
-#### Run the app:
-
-<pre>python main.py</pre>
-
-## Usage
-
-- Play: Start the typing test
-- Enter: Submit typed word
-- Menu → Play Again: Restart the game
-- Menu → Exit: Quit the app
-- Help → GitHub / About: Access help options
 
 ## Project Structure
 <pre>typing_speed_test_app/
