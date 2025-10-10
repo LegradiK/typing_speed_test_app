@@ -43,7 +43,7 @@ class TypingSpeedGame(ctk.CTk):
         self.title('Typing Speed Checker')
         self.resizable(False, False)
 
-        # Path to your TTF in the same folder
+        # Path to ttf in the same folder
         font_path = os.path.join(os.path.dirname(__file__), "PressStart2P-Regular.ttf")
 
         # Register the font with Tk
